@@ -294,25 +294,38 @@ These sit in front of the matching engine as a gate.
 
 ## Where you are right now
 ```
-[ ] Layer 1 — Step 1: Order struct with integer prices
-[ ] Layer 1 — Step 2: OrderBook skeleton, inserts only
-[ ] Layer 1 — Step 3: printBook()
-[ ] Layer 1 — Step 4: matchBuy() and matchSell()
-[ ] Layer 1 — Step 5: addOrder() with matching
-[ ] Layer 1 — Step 6: cancelOrder() v1
-[ ] Layer 1 — Step 7: Order status enum
-[ ] Layer 1 — Step 8: Timestamp time priority
-[ ] Layer 1 — Step 9: Market orders
-[ ] Layer 1 — Step 10: Stress test (10,000 orders)
-[ ] Layer 1 ext: Auction mode
-[ ] Layer 2 — Stage 2b: std::list + iterator index (O(1) cancel)
-[ ] Layer 2 — Stage 2c: Intrusive list + flat hashmap
-[ ] Layer 2 — Stage 2d: Bit packing
-[ ] Layer 3 — Determinism audit
-[ ] Layer 3 — Event log + sequence numbers
-[ ] Layer 3 — State machine replication
-[ ] Layer 3 — Raft consensus
-[ ] Roadmap — Multi-instrument router
-[ ] Roadmap — Market data feed publisher
-[ ] Roadmap — Pre-trade risk checks
+[x] Layer 1 — Step 1: Order struct with integer prices
+[x] Layer 1 — Step 2: OrderBook skeleton, inserts only
+[x] Layer 1 — Step 3: printBook()
+[x] Layer 1 — Step 4: matchBuy() and matchSell()
+[x] Layer 1 — Step 5: addOrder() with matching
+[ ] Layer 1 — Step 6: cancelOrder() v1 (O(n) within level, fine for now)
+[ ] Layer 1 — Step 7: Order status enum (Open, PartiallyFilled, Filled, Cancelled)
+[ ] Layer 1 — Step 8: Timestamp time priority — verify FIFO within a price level
+[ ] Layer 1 — Step 9: Market orders (INT_MAX for buy, 0 for sell)
+[ ] Layer 1 — Step 10: Stress test (10,000 orders, assert no crossed book)
+[ ] Layer 1 ext: Multiple order types (ELO sweep, SLO cancel remainder, AON)
+[ ] Layer 1 ext: Auction mode / IEP calculation (separate algorithm, not continuous)
+[ ] Layer 1.5 — Move semantics
+      addOrder(Order o) → addOrder(Order&& o)
+      std::move when pushing into queues
+      benchmark copy vs move with 100,000 orders
+      (low real benefit until Order carries heap-allocated fields like std::string)
+[ ] Layer 2 — Stage 2a: cancelOrder() v2 — upgrade queue to std::list,
+      store iterators in index for true O(1) cancel
+[ ] Layer 2 — Stage 2b: Intrusive list + flat hashmap (cache-friendly, no malloc per order)
+[ ] Layer 2 — Stage 2c: Bit packing (compress order fields, fit more per cache line)
+[ ] Layer 2 — Stage 2d: Lock-free structures if going concurrent (skip list, atomics)
+[ ] Layer 2 — Profile first — measure before optimising, bottleneck is rarely where you think
+[ ] Layer 3 — Determinism audit (no wall-clock time in matching, no thread races)
+[ ] Layer 3 — Event log + sequence numbers (foundation for replication)
+[ ] Layer 3 — State machine replication (identical replicas, same event stream)
+[ ] Layer 3 — Raft consensus (leader election, log replication, failover)
+[ ] Roadmap — Template the OrderBook matching policy (pro-rata vs FIFO, not per-instrument)
+[ ] Roadmap — Multi-instrument router (one Exchange class, map<symbol, OrderBook>)
+[ ] Roadmap — Depth tracker (top 5 aggregated levels, fires on every book change)
+[ ] Roadmap — Market data feed publisher (listener callbacks → binary encode → TCP broadcast)
+[ ] Roadmap — Feed subscriber / internal book replica (sequence validation, snapshot + incrementals)
+[ ] Roadmap — Pre-trade risk checks (position limits, fat-finger, credit checks)
+[ ] Roadmap — Pre-trade risk checks (position limits, fat-finger, credit checks)
 ```
