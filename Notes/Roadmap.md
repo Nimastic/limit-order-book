@@ -301,7 +301,7 @@ These sit in front of the matching engine as a gate.
 [x] Layer 1 — Step 5: addOrder() with matching
 [x] Layer 1 — Step 6: cancelOrder() v1 (O(n) within level, fine for now)
 [x] Layer 1 — Step 7: Order status enum (Open, PartiallyFilled, Filled, Cancelled)
-[ ] Layer 1 — Step 8: Timestamp time priority — verify FIFO within a price level
+[x] Layer 1 — Step 8: Timestamp time priority — verify FIFO within a price level
 [ ] Layer 1 — Step 9: Market orders (INT_MAX for buy, 0 for sell)
 [ ] Layer 1 — Step 10: Stress test (10,000 orders, assert no crossed book)
 [ ] Layer 1 ext: Multiple order types (ELO sweep, SLO cancel remainder, AON)

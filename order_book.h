@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 
 // namespace using std;
 // bad to use this in header files
@@ -27,6 +28,12 @@ struct Order {
 
 };
 
+inline long long now_ns() {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()
+    ).count();
+}
+
 struct Trade {
     int buyOrderId;
     int sellOrderId;
@@ -44,6 +51,14 @@ public:
 
 
 private:
+// NOTE: ordering within a price level relies on std::queue insertion order (FIFO).
+// This works correctly only if orders arrive in time order.
+// True timestamp-based sorting is not enforced here — if two orders arrive
+// at the same price level out of network order, the later-arriving order
+// could jump the queue.
+// Fix: Stage 2a upgrade replaces std::queue with std::list sorted by timestamp
+// on insert. Until then, insertion order == time order is our assumption.
+
     // bids: highest price first
     // for this bid price, queue of Orders at this price (FIFO)
     std::map<int, std::queue<Order>, std::greater<int>> bids;
