@@ -4,6 +4,7 @@ using namespace std; // no overhead to use this
 
 // Helpers
 
+/** @copydoc OrderBook::purgeCancelledFront */
 // Remove cancelled order from the front of a queue, called before every match attempt so we dont accidentally fill a dead order
 void OrderBook::purgeCancelledFront(queue<Order>& q) {
     while (!q.empty() && q.front().status == OrderStatus::Cancelled) {
@@ -12,12 +13,14 @@ void OrderBook::purgeCancelledFront(queue<Order>& q) {
     }
 };
 
+/** @copydoc OrderBook::recordTrade */
 // Add trades to vector<Trade> trades;
 void OrderBook::recordTrade(int qty, int price, int buyId, int sellId) {
     trades.push_back({buyId, sellId, price, qty});
     cout << "TRADE: " << qty << " @ $" << price / 100.0 << " (buy#" << buyId << " x sell#" << sellId << ")\n";
 }
 
+/** @copydoc OrderBook::cancelOrder */
 // Cancelling orders
 bool OrderBook::cancelOrder(int orderId) {
     auto it = index.find(orderId); // unordered_map<int, Order*>
@@ -38,6 +41,7 @@ bool OrderBook::cancelOrder(int orderId) {
 
     // order status is open or partially filled
     order->status = OrderStatus::Cancelled; // set as cancelled
+    index.erase(it);        // erase by iterator (slightly faster)
     cout << "CANCELLED: order #" << orderId << "\n";
     // we dont remove from the queue, purge will clean it when it reaches the front
     return true;
@@ -46,14 +50,16 @@ bool OrderBook::cancelOrder(int orderId) {
 
 // -- Core Matching
 
+/** @copydoc OrderBook::matchBuy */
 void OrderBook::matchBuy(Order& buy) {
     while (buy.quantity > 0 && !asks.empty()) {
         auto best = asks.begin();          // lowest ask
-        purgeCancelledFront(best->second); // skip dead orders
-        if (best->second.empty()) {
+        purgeCancelledFront(best->second); // skip dead orders and cleanses them
+        if (best->second.empty()) { 
             asks.erase(best);
             continue;
-        }
+        } // if no more Orders, means no more valid orders for the lowest ask
+
         // (best->second).empty()
         // (*best).second.empty()
         // X best->(second.empty())
@@ -80,6 +86,7 @@ void OrderBook::matchBuy(Order& buy) {
     if (buy.quantity == 0) buy.status = OrderStatus::Filled;
 }
 
+/** @copydoc OrderBook::matchSell */
 void OrderBook::matchSell(Order& sell) {
     while (sell.quantity > 0 && !bids.empty()) {
         auto best = bids.begin();            // highest bid
@@ -112,6 +119,7 @@ void OrderBook::matchSell(Order& sell) {
     if (sell.quantity == 0) sell.status = OrderStatus::Filled;
 }
 
+/** @copydoc OrderBook::addOrder */
 // Public Interface
 
 void OrderBook::addOrder(Order o) {
@@ -130,6 +138,7 @@ void OrderBook::addOrder(Order o) {
     }
 }
 
+/** @copydoc OrderBook::printBook */
 // Display
 
 void OrderBook::printBook() const {
